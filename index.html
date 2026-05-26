@@ -4,539 +4,871 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSS AnimCraft - Live Animation Sandbox</title>
+    <title>WebCraft Studio - Visual Website Builder</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #030712;
+            background-color: #0b0f19;
+            -webkit-tap-highlight-color: transparent;
         }
-        
-        .code-font {
-            font-family: 'Fira Code', monospace;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-
-        /* Schicke Grid-Hintergründe für die Preview-Box */
-        .preview-grid {
-            background-size: 20px 20px;
-            background-image: 
-                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
         }
-
-        /* Dynamisch generierter Animations-Style-Tag */
-        #dynamic-animation-style {
-            display: none;
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.4);
+        }
+        /* Editor Active Element Outline */
+        .selected-element {
+            outline: 2px solid #6366f1 !important;
+            outline-offset: 2px;
         }
     </style>
 </head>
-<body class="text-slate-200 min-h-screen flex flex-col overflow-hidden">
-
-    <!-- Dynamischer Style-Tag für die Live-Vorschau -->
-    <style id="dynamic-animation-style"></style>
+<body class="text-slate-100 min-h-screen flex flex-col overflow-hidden pb-16 lg:pb-0">
 
     <!-- Header -->
-    <header class="border-b border-slate-800/80 bg-slate-950/60 backdrop-blur px-6 py-4 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-3">
-            <div class="p-2.5 bg-indigo-600/15 text-indigo-400 rounded-xl border border-indigo-500/20">
-                <i data-lucide="activity" class="w-6 h-6 animate-pulse"></i>
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-4 sm:px-6 py-3 flex items-center justify-between shrink-0 gap-4 z-20">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <div class="p-2 bg-indigo-600/20 text-indigo-400 rounded-xl border border-indigo-500/30">
+                <i data-lucide="layout" class="w-5 h-5 sm:w-6 sm:h-6"></i>
             </div>
             <div>
-                <h1 class="font-extrabold text-xl tracking-tight bg-gradient-to-r bg-clip-text text-transparent from-indigo-400 to-fuchsia-400">AnimCraft</h1>
-                <p class="text-xs text-slate-400 font-medium">Interaktive CSS-Animation-Sandbox</p>
+                <h1 class="font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r bg-clip-text text-transparent from-indigo-400 to-fuchsia-400">WebCraft Studio</h1>
+                <p class="text-[10px] sm:text-xs text-slate-400 font-medium hidden xs:block">Visual Website Builder</p>
             </div>
         </div>
-        
-        <div class="flex items-center gap-3">
-            <span class="text-xs text-slate-500 font-mono hidden sm:inline">NO-AI • Client Side Only</span>
-            <div class="h-4 w-[1px] bg-slate-800 hidden sm:block"></div>
-            <button id="reset-btn" class="text-xs text-slate-400 hover:text-slate-100 flex items-center gap-1.5 transition px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-900">
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+
+        <!-- Toolbar -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Page Selector -->
+            <div class="flex items-center gap-1 sm:gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1">
+                <select id="page-select" class="bg-transparent text-[11px] sm:text-xs text-slate-300 px-1.5 py-1 outline-none cursor-pointer max-w-[80px] sm:max-w-[120px]">
+                    <!-- Wird dynamisch befüllt -->
+                </select>
+                <button id="add-page-btn" class="p-1 hover:bg-slate-800 text-indigo-400 rounded-lg transition" title="Neue Seite">
+                    <i data-lucide="plus" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                </button>
+            </div>
+
+            <button id="export-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition active:scale-95 shadow-lg shadow-indigo-600/20">
+                <i data-lucide="code" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> Code
             </button>
         </div>
     </header>
 
-    <!-- Workspace -->
-    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+    <!-- Main Workspace -->
+    <main class="flex-1 flex overflow-hidden relative w-full">
         
-        <!-- Left Column: Controls (Scrollbar) -->
-        <section class="w-full lg:w-[460px] border-r border-slate-800/80 bg-slate-950/20 flex flex-col h-1/2 lg:h-full overflow-hidden shrink-0">
-            <div class="p-4 border-b border-slate-800/80 bg-slate-950/40 flex justify-between items-center shrink-0">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Parameter & Eigenschaften</span>
-                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-mono">CSS3</span>
-            </div>
-
-            <div class="flex-1 overflow-y-auto p-5 space-y-6">
-                <!-- Preset Buttons -->
-                <div class="space-y-3">
-                    <label class="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-                        <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Presets
-                    </label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="applyPreset('bounce')" class="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl text-xs text-slate-300 transition text-left flex items-center justify-between group">
-                            <span>Bounce</span> <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition text-indigo-400"></i>
-                        </button>
-                        <button onclick="applyPreset('spin')" class="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl text-xs text-slate-300 transition text-left flex items-center justify-between group">
-                            <span>Classic Spin</span> <i data-lucide="rotate-cw" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition text-indigo-400"></i>
-                        </button>
-                        <button onclick="applyPreset('pulse')" class="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl text-xs text-slate-300 transition text-left flex items-center justify-between group">
-                            <span>Pulse</span> <i data-lucide="heart" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition text-indigo-400"></i>
-                        </button>
-                        <button onclick="applyPreset('wobble')" class="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl text-xs text-slate-300 transition text-left flex items-center justify-between group">
-                            <span>Wobble</span> <i data-lucide="shuffle" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition text-indigo-400"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <hr class="border-slate-800/60">
-
-                <!-- Animation Properties -->
-                <div class="space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Timing & Loop</h3>
-                    
-                    <!-- Duration -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs font-medium">
-                            <span class="text-slate-300">Animation-Duration</span>
-                            <span class="text-indigo-400 font-mono" id="val-duration">1s</span>
-                        </div>
-                        <input type="range" id="param-duration" min="0.1" max="5" step="0.1" value="1" class="w-full accent-indigo-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <!-- Delay -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs font-medium">
-                            <span class="text-slate-300">Animation-Delay</span>
-                            <span class="text-indigo-400 font-mono" id="val-delay">0s</span>
-                        </div>
-                        <input type="range" id="param-delay" min="0" max="3" step="0.1" value="0" class="w-full accent-indigo-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <!-- Iteration Count -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs font-medium">
-                            <span class="text-slate-300">Animation-Iteration-Count</span>
-                            <span class="text-indigo-400 font-mono" id="val-iteration">infinite</span>
-                        </div>
-                        <div class="flex gap-2">
-                            <input type="range" id="param-iteration" min="1" max="10" step="1" value="10" class="flex-1 accent-indigo-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer" style="display: none;">
-                            <button id="btn-infinite" class="w-full py-2 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 text-xs font-semibold rounded-xl transition">Unendlich (infinite)</button>
-                            <button id="btn-numeric" class="w-full py-2 bg-slate-900 border border-slate-800 text-xs text-slate-400 rounded-xl transition hover:border-slate-700">Manuell einstellen</button>
-                        </div>
-                    </div>
-
-                    <!-- Timing Function (Easing) -->
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-slate-300">Animation-Timing-Function</label>
-                        <select id="param-easing" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 outline-none focus:border-indigo-500 transition">
-                            <option value="linear">linear</option>
-                            <option value="ease" selected>ease</option>
-                            <option value="ease-in">ease-in</option>
-                            <option value="ease-out">ease-out</option>
-                            <option value="ease-in-out">ease-in-out</option>
-                            <option value="cubic-bezier(0.175, 0.885, 0.32, 1.275)">cubic-bezier (Back / Elastic)</option>
-                            <option value="cubic-bezier(0.6, -0.28, 0.735, 0.045)">cubic-bezier (In-Back)</option>
-                        </select>
-                    </div>
-
-                    <!-- Direction -->
-                    <div class="space-y-2">
-                        <label class="text-xs font-medium text-slate-300">Animation-Direction</label>
-                        <select id="param-direction" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 outline-none focus:border-indigo-500 transition">
-                            <option value="normal">normal</option>
-                            <option value="reverse">reverse</option>
-                            <option value="alternate" selected>alternate (Vor & Zurück)</option>
-                            <option value="alternate-reverse">alternate-reverse</option>
-                        </select>
-                    </div>
-                </div>
-
-                <hr class="border-slate-800/60">
-
-                <!-- Transform Keyframe Controls -->
-                <div class="space-y-4">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Transformations-Ziele (Keyframes)</h3>
-                    
-                    <!-- Translate X -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs font-medium">
-                            <span class="text-slate-300">Verschiebung X</span>
-                            <span class="text-fuchsia-400 font-mono" id="val-tx">0px</span>
-                        </div>
-                        <input type="range" id="param-tx" min="-150" max="150" step="5" value="0" class="w-full accent-fuchsia-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <!-- Translate Y -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs font-medium">
-                            <span class="text-slate-300">Verschiebung Y</span>
-                            <span class="text-fuchsia-400 font-mono" id="val-ty">-50px</span>
-                        </div>
-                        <input type="range" id="param-ty" min="-150" max="150" step="5" value="-50" class="w-full accent-fuchsia-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <!-- Scale -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs font-medium">
-                            <span class="text-slate-300">Skalierung (Scale)</span>
-                            <span class="text-fuchsia-400 font-mono" id="val-scale">1.0</span>
-                        </div>
-                        <input type="range" id="param-scale" min="0.2" max="2" step="0.1" value="1" class="w-full accent-fuchsia-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <!-- Rotation -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs font-medium">
-                            <span class="text-slate-300">Rotation</span>
-                            <span class="text-fuchsia-400 font-mono" id="val-rotate">0deg</span>
-                        </div>
-                        <input type="range" id="param-rotate" min="-360" max="360" step="5" value="0" class="w-full accent-fuchsia-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <!-- Opacity -->
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs font-medium">
-                            <span class="text-slate-300 font-mono">Opacity</span>
-                            <span class="text-fuchsia-400 font-mono" id="val-opacity">1.0</span>
-                        </div>
-                        <input type="range" id="param-opacity" min="0" max="1" step="0.1" value="1" class="w-full accent-fuchsia-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Right Column: Live-Preview & Output Code -->
-        <section class="flex-1 flex flex-col h-1/2 lg:h-full overflow-hidden">
-            
-            <!-- Top half of right column: Live View -->
-            <div class="flex-1 preview-grid relative flex items-center justify-center p-6 border-b border-slate-800/80 bg-slate-950/10">
-                <!-- Watermark -->
-                <div class="absolute top-4 left-4 flex gap-2">
-                    <button onclick="changeObject('box')" id="obj-box" class="px-3 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg text-xs font-medium transition active:scale-95">Box</button>
-                    <button onclick="changeObject('circle')" id="obj-circle" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-400 rounded-lg text-xs font-medium transition active:scale-95 hover:border-slate-700">Kreis</button>
-                    <button onclick="changeObject('star')" id="obj-star" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-400 rounded-lg text-xs font-medium transition active:scale-95 hover:border-slate-700">Stern</button>
-                </div>
-
-                <!-- Live Playground Object -->
-                <div id="sandbox-object-wrapper" class="relative">
-                    <div id="sandbox-object" class="w-24 h-24 bg-gradient-to-tr from-indigo-500 via-purple-500 to-fuchsia-500 rounded-2xl shadow-xl flex items-center justify-center border border-white/10 select-none">
-                        <i id="sandbox-icon" data-lucide="ghost" class="w-10 h-10 text-white drop-shadow"></i>
-                    </div>
-                </div>
-
-                <!-- Info Banner -->
-                <div class="absolute bottom-4 right-4 flex items-center gap-2 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-xl border border-slate-800 text-[10px] text-slate-400">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Render Active
+        <!-- Left Sidebar: Components & Pages (Mobile tab "struktur" active by default) -->
+        <aside id="sidebar-left" class="w-full lg:w-72 border-r border-slate-800 bg-slate-950/40 flex flex-col shrink-0 overflow-y-auto p-5 space-y-6 absolute inset-0 lg:relative lg:translate-x-0 transition-transform duration-300 z-10">
+            <!-- Page Management -->
+            <div class="space-y-3">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                    <i data-lucide="files" class="w-4 h-4"></i> Seiten-Struktur
+                </h3>
+                <div id="pages-list" class="space-y-1">
+                    <!-- Dynamische Seitenliste -->
                 </div>
             </div>
 
-            <!-- Bottom half of right column: Code Exporter & Console -->
-            <div class="h-1/3 lg:h-2/5 flex flex-col bg-slate-950 border-t border-slate-900">
-                <div class="px-6 py-3 border-b border-slate-900 flex justify-between items-center bg-slate-950 shrink-0">
-                    <div class="flex items-center gap-2 text-indigo-400">
-                        <i data-lucide="code-2" class="w-4 h-4"></i>
-                        <span class="text-xs font-bold uppercase tracking-wider">Generiertes CSS & HTML</span>
-                    </div>
-                    <button id="copy-btn" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition active:scale-95">
-                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Code kopieren
+            <hr class="border-slate-800/60">
+
+            <!-- Sektionen Hinzufügen -->
+            <div class="space-y-3">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Sektion einfügen
+                </h3>
+                <div class="grid grid-cols-1 gap-2">
+                    <button onclick="addSection('hero')" class="flex items-center gap-3 p-3 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-xl text-xs text-left text-slate-300 transition active:scale-[0.98]">
+                        <i data-lucide="image" class="w-4 h-4 text-indigo-400 shrink-0"></i>
+                        <div>
+                            <span class="font-semibold block">Hero Header</span>
+                            <span class="text-[10px] text-slate-500">Großer Einstiegsbereich</span>
+                        </div>
+                    </button>
+                    <button onclick="addSection('features')" class="flex items-center gap-3 p-3 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-xl text-xs text-left text-slate-300 transition active:scale-[0.98]">
+                        <i data-lucide="grid" class="w-4 h-4 text-purple-400 shrink-0"></i>
+                        <div>
+                            <span class="font-semibold block">Features Grid</span>
+                            <span class="text-[10px] text-slate-500">3-Spalten-Vorteile</span>
+                        </div>
+                    </button>
+                    <button onclick="addSection('content')" class="flex items-center gap-3 p-3 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-xl text-xs text-left text-slate-300 transition active:scale-[0.98]">
+                        <i data-lucide="text-align-left" class="w-4 h-4 text-pink-400 shrink-0"></i>
+                        <div>
+                            <span class="font-semibold block">Text & Bild</span>
+                            <span class="text-[10px] text-slate-500">Inhaltsbereich mit Grafik</span>
+                        </div>
+                    </button>
+                    <button onclick="addSection('footer')" class="flex items-center gap-3 p-3 bg-slate-900 hover:bg-slate-800/80 border border-slate-800 rounded-xl text-xs text-left text-slate-300 transition active:scale-[0.98]">
+                        <i data-lucide="dock" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                        <div>
+                            <span class="font-semibold block">Footer</span>
+                            <span class="text-[10px] text-slate-500">Fußzeile mit Links</span>
+                        </div>
                     </button>
                 </div>
+            </div>
+        </aside>
 
-                <!-- Code Container -->
-                <div class="flex-1 overflow-auto p-6 code-font text-xs text-slate-300 bg-slate-950/90 flex flex-col sm:flex-row gap-6">
-                    <!-- CSS Code -->
-                    <div class="flex-1 space-y-2">
-                        <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">CSS Stylesheet</p>
-                        <pre class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-xl overflow-x-auto text-indigo-300" id="css-code-block"></pre>
+        <!-- Center: Live Visual Canvas Editor -->
+        <section id="editor-center" class="w-full flex-1 bg-slate-950 p-3 sm:p-6 overflow-y-auto flex flex-col items-center absolute inset-0 lg:relative lg:translate-x-0 transition-transform duration-300 z-10">
+            <!-- Sandbox Frame Simulation -->
+            <div class="w-full max-w-4xl bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden min-h-[500px] flex flex-col">
+                <!-- Browser Bar UI -->
+                <div class="px-4 py-3 bg-slate-950/80 border-b border-slate-800/60 flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500/85"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500/85"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/85"></span>
                     </div>
-                    <!-- HTML Code -->
-                    <div class="flex-1 space-y-2">
-                        <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">HTML Struktur</p>
-                        <pre class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-xl overflow-x-auto text-fuchsia-300" id="html-code-block"></pre>
+                    <div class="bg-slate-900 px-4 py-1 rounded-lg text-[9px] sm:text-[10px] text-slate-500 font-mono tracking-wider w-1/2 text-center truncate" id="browser-url">
+                        localhost:3000/index.html
                     </div>
+                    <div class="w-8"></div>
+                </div>
+
+                <!-- Live Editable Canvas Area -->
+                <div id="canvas" class="flex-1 bg-slate-900 text-slate-100 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
+                    <!-- Sektionen werden hier dynamisch gerendert -->
                 </div>
             </div>
-
         </section>
+
+        <!-- Right Sidebar: Style & Animation Inspector -->
+        <aside id="sidebar-right" class="w-full lg:w-80 border-l border-slate-800 bg-slate-950/40 flex flex-col shrink-0 overflow-y-auto p-5 space-y-6 absolute inset-0 lg:relative lg:translate-x-0 transition-transform duration-300 z-10">
+            <div class="p-4 border-b border-slate-800/80 bg-slate-950/40 -mx-5 -mt-5 flex justify-between items-center shrink-0">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Inspector & Eigenschaften</span>
+                <i data-lucide="sliders" class="w-4 h-4 text-indigo-400"></i>
+            </div>
+
+            <!-- Platzhalter -->
+            <div id="inspector-placeholder" class="py-12 text-center space-y-2 text-slate-500">
+                <i data-lucide="mouse-pointer" class="w-8 h-8 mx-auto text-slate-600 animate-bounce"></i>
+                <p class="text-xs">Klicke auf ein Element im Canvas, um Styles & Animationen anzupassen.</p>
+            </div>
+
+            <!-- Controls -->
+            <div id="inspector-controls" class="hidden space-y-6">
+                <!-- Text Editor -->
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-slate-400">Inhalt bearbeiten</label>
+                    <textarea id="inspect-text" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 outline-none focus:border-indigo-500 transition resize-y" rows="3"></textarea>
+                </div>
+
+                <hr class="border-slate-800/60">
+
+                <!-- Animation Suite -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                        <i data-lucide="wind" class="w-4 h-4 text-indigo-400"></i> Entry Animation
+                    </h4>
+                    
+                    <div class="space-y-2">
+                        <label class="text-xs text-slate-400">Animationseffekt</label>
+                        <select id="inspect-anim-type" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 outline-none focus:border-indigo-500 transition">
+                            <option value="">Keine Animation</option>
+                            <option value="fade-in">Fade In (Einblenden)</option>
+                            <option value="slide-up">Slide Up (Von unten)</option>
+                            <option value="zoom-in">Zoom In (Heranzoomen)</option>
+                            <option value="bounce">Bounce (Hüpfen)</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs text-slate-400">
+                            <span>Verzögerung</span>
+                            <span class="text-indigo-400 font-mono" id="val-anim-delay">0s</span>
+                        </div>
+                        <input type="range" id="inspect-anim-delay" min="0" max="3" step="0.1" value="0" class="w-full accent-indigo-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+
+                <hr class="border-slate-800/60">
+
+                <!-- Typography & Styling -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Design & Layout</h4>
+                    
+                    <div class="space-y-2">
+                        <label class="text-xs text-slate-400">Hintergrundfarbe (Sektion)</label>
+                        <select id="inspect-bg-color" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 outline-none focus:border-indigo-500 transition">
+                            <option value="bg-slate-900">Slate Dark</option>
+                            <option value="bg-slate-950">Slate Pitch Black</option>
+                            <option value="bg-slate-800">Slate Medium</option>
+                            <option value="bg-indigo-950/40">Indigo Soft</option>
+                            <option value="bg-purple-950/40">Purple Soft</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs text-slate-400">Textgröße</label>
+                        <select id="inspect-text-size" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 outline-none focus:border-indigo-500 transition">
+                            <option value="text-sm">Standard (S)</option>
+                            <option value="text-base">Mittel (M)</option>
+                            <option value="text-lg">Groß (L)</option>
+                            <option value="text-2xl font-bold">Titel (XL)</option>
+                            <option value="text-4xl font-extrabold">Hero (XXL)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-slate-800/60">
+
+                <!-- Aktionen -->
+                <button id="delete-element-btn" class="w-full py-3 bg-rose-600/10 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/25 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Sektion löschen
+                </button>
+            </div>
+        </aside>
 
     </main>
 
-    <!-- Toast Notification (Custom Modal replacement) -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-emerald-950/90 border border-emerald-500/50 text-emerald-200 px-4 py-3 rounded-xl flex items-center gap-3 shadow-lg pointer-events-none">
+    <!-- Mobile Navigation Tab Bar (Nur auf mobilen Geräten sichtbar) -->
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-2 z-30 shadow-lg">
+        <button onclick="switchMobileTab('struktur')" id="tab-struktur" class="flex flex-col items-center gap-1 text-indigo-400 p-2 transition">
+            <i data-lucide="folder-tree" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium">Struktur</span>
+        </button>
+        <button onclick="switchMobileTab('editor')" id="tab-editor" class="flex flex-col items-center gap-1 text-slate-500 p-2 transition">
+            <i data-lucide="laptop" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium">Editor</span>
+        </button>
+        <button onclick="switchMobileTab('inspector')" id="tab-inspector" class="flex flex-col items-center gap-1 text-slate-500 p-2 transition">
+            <i data-lucide="sliders" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium">Inspector</span>
+        </button>
+    </div>
+
+    <!-- Export Code Overlay Modal -->
+    <div id="export-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="p-4 sm:p-6 border-b border-slate-800 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2 text-indigo-400">
+                    <i data-lucide="file-code" class="w-5 h-5"></i>
+                    <span class="font-bold text-sm sm:text-base">Dein Webseiten-Code</span>
+                </div>
+                <button id="close-modal-btn" class="text-slate-400 hover:text-slate-100 transition p-1.5 rounded-lg hover:bg-slate-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="px-4 sm:px-6 py-3 bg-indigo-950/30 border-b border-indigo-500/20 text-[11px] sm:text-xs text-indigo-300 flex items-center gap-2">
+                <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
+                <span>Enthält alle deine Seiten, das Routing für GitHub/Vercel und alle flüssigen CSS-Animationen!</span>
+            </div>
+
+            <div class="flex-1 p-4 sm:p-6 overflow-auto">
+                <pre class="bg-slate-950 border border-slate-800 p-4 rounded-xl text-[10px] sm:text-xs text-slate-300 overflow-x-auto font-mono select-all h-[300px] sm:h-[400px]" id="export-code-block"></pre>
+            </div>
+
+            <div class="p-4 sm:p-6 border-t border-slate-800 flex justify-end gap-3 shrink-0">
+                <button id="modal-copy-btn" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-5 py-3 text-xs font-semibold flex items-center justify-center gap-2 transition active:scale-95">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Code kopieren
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notice -->
+    <div id="toast" class="fixed bottom-20 lg:bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-emerald-950/90 border border-emerald-500/50 text-emerald-200 px-4 py-3 rounded-xl flex items-center gap-3 shadow-lg pointer-events-none">
         <i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i>
         <span id="toast-message" class="text-xs font-medium">In die Zwischenablage kopiert!</span>
     </div>
 
-    <!-- Live Script -->
+    <!-- Script Logic -->
     <script>
-        // DOM Controls
-        const durationInput = document.getElementById('param-duration');
-        const delayInput = document.getElementById('param-delay');
-        const iterationInput = document.getElementById('param-iteration');
-        const easingSelect = document.getElementById('param-easing');
-        const directionSelect = document.getElementById('param-direction');
+        // --- DATA & STATE MANAGEMENT ---
+        let siteData = {
+            "home": {
+                name: "Home",
+                sections: [
+                    {
+                        id: "sec-hero-1",
+                        type: "hero",
+                        bgColor: "bg-slate-900",
+                        title: "Erschaffe digitale Meisterwerke",
+                        titleSize: "text-4xl font-extrabold",
+                        titleAnim: "slide-up",
+                        titleDelay: "0.2",
+                        subtitle: "Willkommen auf deiner neuen Multi-Page Webseite, die flüssig animiert ist und direkt auf GitHub Pages & Vercel gehostet werden kann.",
+                        subtitleSize: "text-base",
+                        subtitleAnim: "fade-in",
+                        subtitleDelay: "0.5"
+                    },
+                    {
+                        id: "sec-features-1",
+                        type: "features",
+                        bgColor: "bg-slate-950",
+                        title: "Warum WebCraft Studio?",
+                        titleSize: "text-2xl font-bold",
+                        titleAnim: "fade-in",
+                        titleDelay: "0.1",
+                        features: [
+                            { icon: "zap", title: "Blendschnell", text: "Optimierter statischer Code ohne lästiges Backend." },
+                            { icon: "palette", title: "Visual Editing", text: "Einfach reinklicken und die Inhalte live anpassen." },
+                            { icon: "smartphone", title: "Mobil bereit", text: "Komplett responsiv auf jedem Endgerät." }
+                        ]
+                    }
+                ]
+            },
+            "about": {
+                name: "Über uns",
+                sections: [
+                    {
+                        id: "sec-content-1",
+                        type: "content",
+                        bgColor: "bg-slate-900",
+                        title: "Unsere Mission",
+                        titleSize: "text-2xl font-bold",
+                        titleAnim: "zoom-in",
+                        titleDelay: "0.2",
+                        text: "Wir glauben daran, dass das Erstellen von Webseiten Spaß machen muss. Ohne komplizierten Ballast und unnötige Kosten.",
+                        textSize: "text-base",
+                        textAnim: "fade-in",
+                        textDelay: "0.4"
+                    }
+                ]
+            }
+        };
+
+        let activePage = "home";
+        let activeElementId = null;
+
+        // --- DOM ELEMENTS ---
+        const pageSelect = document.getElementById('page-select');
+        const pagesList = document.getElementById('pages-list');
+        const canvas = document.getElementById('canvas');
+        const browserUrl = document.getElementById('browser-url');
         
-        const txInput = document.getElementById('param-tx');
-        const tyInput = document.getElementById('param-ty');
-        const scaleInput = document.getElementById('param-scale');
-        const rotateInput = document.getElementById('param-rotate');
-        const opacityInput = document.getElementById('param-opacity');
+        const sidebarLeft = document.getElementById('sidebar-left');
+        const editorCenter = document.getElementById('editor-center');
+        const sidebarRight = document.getElementById('sidebar-right');
+        
+        // Inspector elements
+        const inspectorPlaceholder = document.getElementById('inspector-placeholder');
+        const inspectorControls = document.getElementById('inspector-controls');
+        const inspectText = document.getElementById('inspect-text');
+        const inspectAnimType = document.getElementById('inspect-anim-type');
+        const inspectAnimDelay = document.getElementById('inspect-anim-delay');
+        const valAnimDelay = document.getElementById('val-anim-delay');
+        const inspectBgColor = document.getElementById('inspect-bg-color');
+        const inspectTextSize = document.getElementById('inspect-text-size');
+        const deleteElementBtn = document.getElementById('delete-element-btn');
 
-        // Output Values
-        const valDuration = document.getElementById('val-duration');
-        const valDelay = document.getElementById('val-delay');
-        const valIteration = document.getElementById('val-iteration');
-        const valTx = document.getElementById('val-tx');
-        const valTy = document.getElementById('val-ty');
-        const valScale = document.getElementById('val-scale');
-        const valRotate = document.getElementById('val-rotate');
-        const valOpacity = document.getElementById('val-opacity');
+        // Modal elements
+        const exportBtn = document.getElementById('export-btn');
+        const exportModal = document.getElementById('export-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const exportCodeBlock = document.getElementById('export-code-block');
+        const modalCopyBtn = document.getElementById('modal-copy-btn');
+        const addPageBtn = document.getElementById('add-page-btn');
 
-        // Elements
-        const sandboxObj = document.getElementById('sandbox-object');
-        const sandboxIcon = document.getElementById('sandbox-icon');
-        const styleTag = document.getElementById('dynamic-animation-style');
-        const cssCodeBlock = document.getElementById('css-code-block');
-        const htmlCodeBlock = document.getElementById('html-code-block');
-        const copyBtn = document.getElementById('copy-btn');
-        const resetBtn = document.getElementById('reset-btn');
+        // --- MOBILE NAV TAB SYSTEM ---
+        let currentTab = 'struktur';
 
-        // Infinite/Numeric Loop Buttons
-        const btnInfinite = document.getElementById('btn-infinite');
-        const btnNumeric = document.getElementById('btn-numeric');
+        function switchMobileTab(tab) {
+            currentTab = tab;
 
-        let isInfinite = true;
-        let activeObject = 'box';
+            // Reset classes
+            sidebarLeft.style.transform = "translateX(-100%)";
+            editorCenter.style.transform = "translateX(-100%)";
+            sidebarRight.style.transform = "translateX(-100%)";
 
-        // Initialize Lucide Icons
-        lucide.createIcons();
+            document.getElementById('tab-struktur').className = "flex flex-col items-center gap-1 text-slate-500 p-2 transition";
+            document.getElementById('tab-editor').className = "flex flex-col items-center gap-1 text-slate-500 p-2 transition";
+            document.getElementById('tab-inspector').className = "flex flex-col items-center gap-1 text-slate-500 p-2 transition";
 
-        // Register All Events
-        const inputs = [
-            durationInput, delayInput, iterationInput, easingSelect, 
-            directionSelect, txInput, tyInput, scaleInput, rotateInput, opacityInput
-        ];
+            if (tab === 'struktur') {
+                sidebarLeft.style.transform = "translateX(0)";
+                document.getElementById('tab-struktur').className = "flex flex-col items-center gap-1 text-indigo-400 p-2 transition";
+            } else if (tab === 'editor') {
+                editorCenter.style.transform = "translateX(0)";
+                document.getElementById('tab-editor').className = "flex flex-col items-center gap-1 text-indigo-400 p-2 transition";
+            } else if (tab === 'inspector') {
+                sidebarRight.style.transform = "translateX(0)";
+                document.getElementById('tab-inspector').className = "flex flex-col items-center gap-1 text-indigo-400 p-2 transition";
+            }
+        }
 
-        inputs.forEach(input => {
-            input.addEventListener('input', updateAnimation);
-            input.addEventListener('change', updateAnimation);
+        // Handle adaptive responsive display sizes
+        function applyResponsiveClasses() {
+            if (window.innerWidth >= 1024) {
+                // Clear transforms for desktop layouts
+                sidebarLeft.style.transform = "none";
+                editorCenter.style.transform = "none";
+                sidebarRight.style.transform = "none";
+            } else {
+                // Return to active tab if on mobile
+                switchMobileTab(currentTab);
+            }
+        }
+
+        window.addEventListener('resize', applyResponsiveClasses);
+
+        // --- ENGINE INITS ---
+        function init() {
+            renderPageDropdown();
+            renderPagesList();
+            renderCanvas();
+            applyResponsiveClasses();
+            lucide.createIcons();
+        }
+
+        function renderPageDropdown() {
+            pageSelect.innerHTML = "";
+            Object.keys(siteData).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = siteData[key].name;
+                opt.selected = (key === activePage);
+                pageSelect.appendChild(opt);
+            });
+        }
+
+        function renderPagesList() {
+            pagesList.innerHTML = "";
+            Object.keys(siteData).forEach(key => {
+                const isSelected = (key === activePage);
+                const item = document.createElement('div');
+                item.className = `flex items-center justify-between p-3 rounded-xl text-xs transition cursor-pointer ${isSelected ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/20 font-semibold' : 'hover:bg-slate-900 text-slate-400 hover:text-slate-200'}`;
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-2 flex-1 py-1" onclick="switchPage('${key}')">
+                        <i data-lucide="file" class="w-3.5 h-3.5"></i>
+                        <span>${siteData[key].name}</span>
+                    </div>
+                    ${key !== 'home' ? `
+                        <button onclick="deletePage('${key}')" class="text-slate-500 hover:text-rose-400 p-1 transition">
+                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        </button>
+                    ` : ''}
+                `;
+                pagesList.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
+        addPageBtn.addEventListener('click', () => {
+            const pageName = prompt("Name der neuen Seite:", "Neue Seite");
+            if (!pageName) return;
+            const key = pageName.toLowerCase().replace(/[^a-z0-9]/g, "-");
+            if (siteData[key]) {
+                alert("Diese Seite existiert bereits.");
+                return;
+            }
+
+            siteData[key] = {
+                name: pageName,
+                sections: [
+                    {
+                        id: `sec-hero-${Date.now()}`,
+                        type: "hero",
+                        bgColor: "bg-slate-900",
+                        title: `Willkommen auf ${pageName}`,
+                        titleSize: "text-4xl font-extrabold",
+                        titleAnim: "fade-in",
+                        titleDelay: "0",
+                        subtitle: "Passe diese Seite ganz nach deinen Vorstellungen an.",
+                        subtitleSize: "text-base",
+                        subtitleAnim: "fade-in",
+                        subtitleDelay: "0.2"
+                    }
+                ]
+            };
+
+            activePage = key;
+            renderPageDropdown();
+            renderPagesList();
+            renderCanvas();
+            if (window.innerWidth < 1024) switchMobileTab('editor');
         });
 
-        // Loop Mode Switchers
-        btnInfinite.addEventListener('click', () => {
-            isInfinite = true;
-            btnInfinite.className = "w-full py-2 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 text-xs font-semibold rounded-xl transition";
-            btnNumeric.className = "w-full py-2 bg-slate-900 border border-slate-800 text-xs text-slate-400 rounded-xl transition hover:border-slate-700";
-            iterationInput.style.display = 'none';
-            valIteration.textContent = "infinite";
-            updateAnimation();
+        function deletePage(key) {
+            if (key === 'home') return;
+            if (confirm(`Möchtest du die Seite "${siteData[key].name}" wirklich löschen?`)) {
+                delete siteData[key];
+                activePage = 'home';
+                renderPageDropdown();
+                renderPagesList();
+                renderCanvas();
+            }
+        }
+
+        function switchPage(key) {
+            activePage = key;
+            browserUrl.textContent = `localhost:3000/${key === 'home' ? 'index' : key}.html`;
+            renderPageDropdown();
+            renderPagesList();
+            renderCanvas();
+            closeInspector();
+            if (window.innerWidth < 1024) switchMobileTab('editor');
+        }
+
+        pageSelect.addEventListener('change', (e) => {
+            switchPage(e.target.value);
         });
 
-        btnNumeric.addEventListener('click', () => {
-            isInfinite = false;
-            btnNumeric.className = "w-full py-2 bg-fuchsia-600/20 text-fuchsia-400 border border-fuchsia-500/30 text-xs font-semibold rounded-xl transition";
-            btnInfinite.className = "w-full py-2 bg-slate-900 border border-slate-800 text-xs text-slate-400 rounded-xl transition hover:border-slate-700";
-            iterationInput.style.display = 'block';
-            valIteration.textContent = iterationInput.value;
-            updateAnimation();
-        });
+        function addSection(type) {
+            const newId = `sec-${type}-${Date.now()}`;
+            let section = {};
 
-        // Object Swappper
-        function changeObject(type) {
-            activeObject = type;
-            const btnBox = document.getElementById('obj-box');
-            const btnCircle = document.getElementById('obj-circle');
-            const btnStar = document.getElementById('obj-star');
+            if (type === 'hero') {
+                section = {
+                    id: newId,
+                    type: "hero",
+                    bgColor: "bg-slate-900",
+                    title: "Deine Überschrift",
+                    titleSize: "text-3xl font-extrabold sm:text-4xl",
+                    titleAnim: "slide-up",
+                    titleDelay: "0.1",
+                    subtitle: "Füge hier eine packende Beschreibung für deine Sektion hinzu.",
+                    subtitleSize: "text-base",
+                    subtitleAnim: "fade-in",
+                    subtitleDelay: "0.3"
+                };
+            } else if (type === 'features') {
+                section = {
+                    id: newId,
+                    type: "features",
+                    bgColor: "bg-slate-950",
+                    title: "Unsere Features",
+                    titleSize: "text-2xl font-bold",
+                    titleAnim: "fade-in",
+                    titleDelay: "0",
+                    features: [
+                        { icon: "zap", title: "Premium Qualität", text: "Handverlesene Details und exzellente Performance." },
+                        { icon: "clock", title: "Spart Zeit", text: "Fix und fertig für den schnellen Start vorbereitet." },
+                        { icon: "shield-check", title: "Sicher gehostet", text: "100% statisch, sicher und wartungsfrei auf Vercel." }
+                    ]
+                };
+            } else if (type === 'content') {
+                section = {
+                    id: newId,
+                    type: "content",
+                    bgColor: "bg-slate-900",
+                    title: "Über unser Konzept",
+                    titleSize: "text-2xl font-bold",
+                    titleAnim: "zoom-in",
+                    titleDelay: "0.1",
+                    text: "Dies ist ein schöner Inhaltsblock. Perfekt um deinen Besuchern wichtige Informationen zur Verfügung zu stellen.",
+                    textSize: "text-base",
+                    textAnim: "fade-in",
+                    textDelay: "0.3"
+                };
+            } else if (type === 'footer') {
+                section = {
+                    id: newId,
+                    type: "footer",
+                    bgColor: "bg-slate-950",
+                    text: "© 2026 Mein WebCraft Projekt. Alle Rechte vorbehalten.",
+                    textSize: "text-sm",
+                    textAnim: "fade-in",
+                    textDelay: "0.1"
+                };
+            }
 
-            // Reset States
-            [btnBox, btnCircle, btnStar].forEach(btn => {
-                btn.className = "px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-400 rounded-lg text-xs font-medium transition active:scale-95 hover:border-slate-700";
+            siteData[activePage].sections.push(section);
+            renderCanvas();
+            if (window.innerWidth < 1024) switchMobileTab('editor');
+        }
+
+        // --- VISUAL CANVAS RENDERING ---
+        function renderCanvas() {
+            canvas.innerHTML = "";
+            const sections = siteData[activePage].sections;
+
+            if (sections.length === 0) {
+                canvas.innerHTML = `
+                    <div class="py-16 text-center text-slate-500 border-2 border-dashed border-slate-800 rounded-2xl p-4">
+                        <i data-lucide="plus-square" class="w-8 h-8 mx-auto text-slate-700 mb-2"></i>
+                        <p class="text-xs font-semibold">Noch keine Sektionen vorhanden.</p>
+                        <p class="text-[11px] text-slate-600 mt-1">Füge eine Sektion über das linke Panel hinzu.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            sections.forEach((sec) => {
+                const sectionEl = document.createElement('section');
+                sectionEl.className = `p-6 sm:p-10 rounded-xl border border-transparent hover:border-indigo-500/30 transition relative group ${sec.bgColor} space-y-4`;
+                sectionEl.dataset.sectionId = sec.id;
+
+                let moveControls = `
+                    <div class="absolute right-3 top-3 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition z-10 bg-slate-950/90 backdrop-blur border border-slate-800 p-1 rounded-lg">
+                        <button onclick="moveSection('${sec.id}', -1)" class="p-1 hover:bg-slate-800 text-slate-400 hover:text-slate-100 rounded transition"><i data-lucide="arrow-up" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="moveSection('${sec.id}', 1)" class="p-1 hover:bg-slate-800 text-slate-400 hover:text-slate-100 rounded transition"><i data-lucide="arrow-down" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="deleteSection('${sec.id}')" class="p-1 hover:bg-slate-800 text-rose-400 rounded transition"><i data-lucide="trash" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                `;
+
+                if (sec.type === 'hero') {
+                    sectionEl.innerHTML = `
+                        ${moveControls}
+                        <div class="text-center py-4 max-w-2xl mx-auto space-y-3">
+                            <h1 id="${sec.id}-title" class="${sec.titleSize} tracking-tight text-slate-100 cursor-pointer hover:bg-slate-800/40 p-2 rounded" onclick="handleElementClick('${sec.id}', 'title')">${escapeHtml(sec.title)}</h1>
+                            <p id="${sec.id}-subtitle" class="${sec.subtitleSize} text-slate-400 cursor-pointer hover:bg-slate-800/40 p-2 rounded" onclick="handleElementClick('${sec.id}', 'subtitle')">${escapeHtml(sec.subtitle)}</p>
+                        </div>
+                    `;
+                } else if (sec.type === 'features') {
+                    let featCards = "";
+                    sec.features.forEach((feat, fIdx) => {
+                        featCards += `
+                            <div class="bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                                    <i data-lucide="${feat.icon}" class="w-4 h-4"></i>
+                                </div>
+                                <h4 id="${sec.id}-f-${fIdx}-title" class="font-bold text-slate-100 cursor-pointer hover:bg-slate-800/40 p-1 rounded" onclick="handleElementClick('${sec.id}', 'feature-title-${fIdx}')">${escapeHtml(feat.title)}</h4>
+                                <p id="${sec.id}-f-${fIdx}-text" class="text-xs text-slate-400 leading-relaxed cursor-pointer hover:bg-slate-800/40 p-1 rounded" onclick="handleElementClick('${sec.id}', 'feature-text-${fIdx}')">${escapeHtml(feat.text)}</p>
+                            </div>
+                        `;
+                    });
+
+                    sectionEl.innerHTML = `
+                        ${moveControls}
+                        <div class="space-y-6 py-2">
+                            <h2 id="${sec.id}-title" class="${sec.titleSize} text-center text-slate-100 cursor-pointer hover:bg-slate-800/40 p-2 rounded max-w-md mx-auto" onclick="handleElementClick('${sec.id}', 'title')">${escapeHtml(sec.title)}</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4sm sm:gap-6">
+                                ${featCards}
+                            </div>
+                        </div>
+                    `;
+                } else if (sec.type === 'content') {
+                    sectionEl.innerHTML = `
+                        ${moveControls}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-center py-4">
+                            <div class="space-y-3">
+                                <h3 id="${sec.id}-title" class="${sec.titleSize} text-slate-100 cursor-pointer hover:bg-slate-800/40 p-2 rounded" onclick="handleElementClick('${sec.id}', 'title')">${escapeHtml(sec.title)}</h3>
+                                <p id="${sec.id}-text" class="${sec.textSize} text-slate-400 leading-relaxed cursor-pointer hover:bg-slate-800/40 p-2 rounded" onclick="handleElementClick('${sec.id}', 'text')">${escapeHtml(sec.text)}</p>
+                            </div>
+                            <div class="bg-slate-950 border border-slate-800/80 rounded-2xl aspect-video flex flex-col items-center justify-center text-slate-500 p-4 text-center">
+                                <i data-lucide="image-plus" class="w-7 h-7 text-slate-700 mb-1"></i>
+                                <span class="text-[9px] tracking-wider uppercase font-semibold text-slate-600">Platzhalter</span>
+                            </div>
+                        </div>
+                    `;
+                } else if (sec.type === 'footer') {
+                    sectionEl.innerHTML = `
+                        ${moveControls}
+                        <div class="text-center py-2 border-t border-slate-800/60 mt-2">
+                            <p id="${sec.id}-text" class="${sec.textSize} text-slate-500 cursor-pointer hover:bg-slate-800/40 p-2 rounded" onclick="handleElementClick('${sec.id}', 'text')">${escapeHtml(sec.text)}</p>
+                        </div>
+                    `;
+                }
+
+                canvas.appendChild(sectionEl);
             });
 
-            // Set Active & Modify Styles
-            if (type === 'box') {
-                btnBox.className = "px-3 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg text-xs font-medium transition active:scale-95";
-                sandboxObj.className = "w-24 h-24 bg-gradient-to-tr from-indigo-500 via-purple-500 to-fuchsia-500 rounded-2xl shadow-xl flex items-center justify-center border border-white/10 select-none";
-                sandboxIcon.style.display = 'block';
-            } else if (type === 'circle') {
-                btnCircle.className = "px-3 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg text-xs font-medium transition active:scale-95";
-                sandboxObj.className = "w-24 h-24 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-full shadow-xl flex items-center justify-center border border-white/10 select-none";
-                sandboxIcon.style.display = 'block';
-            } else if (type === 'star') {
-                btnStar.className = "px-3 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg text-xs font-medium transition active:scale-95";
-                sandboxObj.className = "w-24 h-24 bg-gradient-to-tr from-amber-400 to-orange-500 shadow-xl flex items-center justify-center border border-white/10 select-none";
-                sandboxObj.style.clipPath = "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
-                sandboxIcon.style.display = 'none'; // No icon in the star
-            }
-
-            if (type !== 'star') {
-                sandboxObj.style.clipPath = 'none';
-            }
-
-            updateAnimation();
+            lucide.createIcons();
         }
 
-        // Apply Presets
-        function applyPreset(name) {
-            if (name === 'bounce') {
-                durationInput.value = "1";
-                delayInput.value = "0";
-                easingSelect.value = "cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-                directionSelect.value = "alternate";
-                txInput.value = "0";
-                tyInput.value = "-100";
-                scaleInput.value = "1.1";
-                rotateInput.value = "0";
-                opacityInput.value = "1";
-            } else if (name === 'spin') {
-                durationInput.value = "2";
-                delayInput.value = "0";
-                easingSelect.value = "linear";
-                directionSelect.value = "normal";
-                txInput.value = "0";
-                tyInput.value = "0";
-                scaleInput.value = "1";
-                rotateInput.value = "360";
-                opacityInput.value = "1";
-            } else if (name === 'pulse') {
-                durationInput.value = "0.8";
-                delayInput.value = "0";
-                easingSelect.value = "ease-in-out";
-                directionSelect.value = "alternate";
-                txInput.value = "0";
-                tyInput.value = "0";
-                scaleInput.value = "1.3";
-                rotateInput.value = "0";
-                opacityInput.value = "0.8";
-            } else if (name === 'wobble') {
-                durationInput.value = "1.2";
-                delayInput.value = "0";
-                easingSelect.value = "ease-in-out";
-                directionSelect.value = "alternate";
-                txInput.value = "50";
-                tyInput.value = "0";
-                scaleInput.value = "1";
-                rotateInput.value = "30";
-                opacityInput.value = "1";
+        // Handle item clicks with mobile safety transitions
+        function handleElementClick(sectionId, elementKey) {
+            openInspector(sectionId, elementKey);
+            // On mobile, switch automatically to the Inspector tab to make editing intuitive
+            if (window.innerWidth < 1024) {
+                switchMobileTab('inspector');
             }
-
-            // Sync visual display of numeric loop if active
-            if (!isInfinite) {
-                btnInfinite.click();
-            }
-
-            updateAnimation();
         }
 
-        // Main Engine: Rebuild and reinject CSS & generate preview code
-        function updateAnimation() {
-            // Get current values
-            const d = durationInput.value + "s";
-            const del = delayInput.value + "s";
-            const iter = isInfinite ? "infinite" : iterationInput.value;
-            const ease = easingSelect.value;
-            const dir = directionSelect.value;
+        // --- ORDERING & MANIPULATION ---
+        function moveSection(id, direction) {
+            const sections = siteData[activePage].sections;
+            const index = sections.findIndex(s => s.id === id);
+            if (index === -1) return;
 
-            const tx = txInput.value + "px";
-            const ty = tyInput.value + "px";
-            const scale = scaleInput.value;
-            const r = rotateInput.value + "deg";
-            const op = opacityInput.value;
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= sections.length) return;
 
-            // Update Side Value Badges
-            valDuration.textContent = d;
-            valDelay.textContent = del;
-            valIteration.textContent = iter;
-            valTx.textContent = tx;
-            valTy.textContent = ty;
-            valScale.textContent = scale;
-            valRotate.textContent = r;
-            valOpacity.textContent = op;
+            const temp = sections[index];
+            sections[index] = sections[targetIndex];
+            sections[targetIndex] = temp;
 
-            // Generate Keyframe Rule
-            const keyframeStyles = `
-@keyframes animCraftMove {
-  0% {
-    transform: translate(0px, 0px) scale(1) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(${tx}, ${ty}) scale(${scale}) rotate(${r});
-    opacity: ${op};
-  }
-}`;
-
-            const objectStyle = `
-#sandbox-object {
-  animation-name: animCraftMove;
-  animation-duration: ${d};
-  animation-delay: ${del};
-  animation-iteration-count: ${iter};
-  animation-timing-function: ${ease};
-  animation-direction: ${dir};
-  animation-fill-mode: forwards;
-}`;
-
-            // Inject styles dynamically into Document
-            styleTag.innerHTML = keyframeStyles + objectStyle;
-
-            // Update HTML Output Field
-            let classes = "w-24 h-24 bg-gradient-to-tr from-indigo-500 to-fuchsia-500 rounded-2xl shadow-xl flex items-center justify-center";
-            if (activeObject === 'circle') classes = "w-24 h-24 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-full shadow-xl flex items-center justify-center";
-            if (activeObject === 'star') classes = "w-24 h-24 bg-gradient-to-tr from-amber-400 to-orange-500 shadow-xl";
-
-            const elementString = activeObject === 'star' 
-                ? `<div class="${classes}" id="my-element"></div>`
-                : `<div class="${classes}" id="my-element">
-  <!-- Deinen SVG-Inhalt oder Text hier platzieren -->
-</div>`;
-
-            htmlCodeBlock.textContent = elementString;
-
-            // Update CSS Output Field
-            const cssString = `#my-element {
-  animation: animCraftMove ${d} ${ease} ${del} ${iter} ${dir} forwards;
-}
-
-${keyframeStyles.trim()}`;
-
-            cssCodeBlock.textContent = cssString;
+            renderCanvas();
         }
 
-        // Reset Button Action
-        resetBtn.addEventListener('click', () => {
-            applyPreset('pulse');
+        function deleteSection(id) {
+            if (confirm("Möchtest du diese Sektion wirklich entfernen?")) {
+                const sections = siteData[activePage].sections;
+                siteData[activePage].sections = sections.filter(s => s.id !== id);
+                renderCanvas();
+                closeInspector();
+                if (window.innerWidth < 1024) switchMobileTab('editor');
+            }
+        }
+
+        // --- INSPECTOR LOGIC ---
+        function openInspector(sectionId, elementKey) {
+            activeElementId = { sectionId, elementKey };
+
+            const sec = siteData[activePage].sections.find(s => s.id === sectionId);
+            if (!sec) return;
+
+            document.querySelectorAll('.selected-element').forEach(el => el.classList.remove('selected-element'));
+
+            inspectorPlaceholder.classList.add('hidden');
+            inspectorControls.classList.remove('hidden');
+
+            let activeDOMElement = null;
+
+            if (elementKey === 'title') {
+                inspectText.value = sec.title;
+                inspectAnimType.value = sec.titleAnim || '';
+                inspectAnimDelay.value = sec.titleDelay || '0';
+                inspectTextSize.value = sec.titleSize || 'text-2xl font-bold';
+                inspectTextSize.parentElement.classList.remove('hidden');
+                activeDOMElement = document.getElementById(`${sectionId}-title`);
+            } else if (elementKey === 'subtitle') {
+                inspectText.value = sec.subtitle;
+                inspectAnimType.value = sec.subtitleAnim || '';
+                inspectAnimDelay.value = sec.subtitleDelay || '0';
+                inspectTextSize.value = sec.subtitleSize || 'text-base';
+                inspectTextSize.parentElement.classList.remove('hidden');
+                activeDOMElement = document.getElementById(`${sectionId}-subtitle`);
+            } else if (elementKey === 'text') {
+                inspectText.value = sec.text;
+                inspectAnimType.value = sec.textAnim || '';
+                inspectAnimDelay.value = sec.textDelay || '0';
+                inspectTextSize.value = sec.textSize || 'text-sm';
+                inspectTextSize.parentElement.classList.remove('hidden');
+                activeDOMElement = document.getElementById(`${sectionId}-text`);
+            } else if (elementKey.startsWith('feature-title-')) {
+                const fIdx = parseInt(elementKey.split('-').pop());
+                inspectText.value = sec.features[fIdx].title;
+                inspectAnimType.value = '';
+                inspectAnimDelay.value = '0';
+                inspectTextSize.parentElement.classList.add('hidden');
+                activeDOMElement = document.getElementById(`${sectionId}-f-${fIdx}-title`);
+            } else if (elementKey.startsWith('feature-text-')) {
+                const fIdx = parseInt(elementKey.split('-').pop());
+                inspectText.value = sec.features[fIdx].text;
+                inspectAnimType.value = '';
+                inspectAnimDelay.value = '0';
+                inspectTextSize.parentElement.classList.add('hidden');
+                activeDOMElement = document.getElementById(`${sectionId}-f-${fIdx}-text`);
+            }
+
+            if (activeDOMElement) {
+                activeDOMElement.classList.add('selected-element');
+            }
+
+            inspectBgColor.value = sec.bgColor || 'bg-slate-900';
+            valAnimDelay.textContent = inspectAnimDelay.value + "s";
+        }
+
+        function closeInspector() {
+            activeElementId = null;
+            inspectorControls.classList.add('hidden');
+            inspectorPlaceholder.classList.remove('hidden');
+            document.querySelectorAll('.selected-element').forEach(el => el.classList.remove('selected-element'));
+        }
+
+        inspectText.addEventListener('input', (e) => {
+            if (!activeElementId) return;
+            const { sectionId, elementKey } = activeElementId;
+            const sec = siteData[activePage].sections.find(s => s.id === sectionId);
+            if (!sec) return;
+
+            if (elementKey === 'title') {
+                sec.title = e.target.value;
+            } else if (elementKey === 'subtitle') {
+                sec.subtitle = e.target.value;
+            } else if (elementKey === 'text') {
+                sec.text = e.target.value;
+            } else if (elementKey.startsWith('feature-title-')) {
+                const fIdx = parseInt(elementKey.split('-').pop());
+                sec.features[fIdx].title = e.target.value;
+            } else if (elementKey.startsWith('feature-text-')) {
+                const fIdx = parseInt(elementKey.split('-').pop());
+                sec.features[fIdx].text = e.target.value;
+            }
+
+            const targetDom = document.getElementById(`${sectionId}-${elementKey.replace('feature-', 'f-')}`);
+            if (targetDom) targetDom.textContent = e.target.value;
         });
 
-        // Clipboard Copy Helper
-        copyBtn.addEventListener('click', () => {
-            const cssText = cssCodeBlock.textContent;
-            const htmlText = htmlCodeBlock.textContent;
-            const combinedText = `/* --- CSS STYLES --- */\n${cssText}\n\n<!-- --- HTML --- -->\n${htmlText}`;
-
-            // Fallback Copy Function
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = combinedText;
-            document.body.appendChild(tempTextArea);
-            tempTextArea.select();
-            
-            try {
-                document.execCommand('copy');
-                showToast();
-            } catch (err) {
-                console.error('Fehler beim Kopieren: ', err);
+        inspectAnimType.addEventListener('change', (e) => {
+            if (!activeElementId) return;
+            const { sectionId, elementKey } = activeElementId;
+            const sec = siteData[activePage].sections.find(s => s.id === sectionId);
+            if (sec) {
+                sec[`${elementKey}Anim`] = e.target.value;
             }
-            
-            document.body.removeChild(tempTextArea);
         });
 
-        // Toast Trigger
-        function showToast() {
+        inspectAnimDelay.addEventListener('input', (e) => {
+            if (!activeElementId) return;
+            const { sectionId, elementKey } = activeElementId;
+            const sec = siteData[activePage].sections.find(s => s.id === sectionId);
+            if (sec) {
+                sec[`${elementKey}Delay`] = e.target.value;
+                valAnimDelay.textContent = e.target.value + "s";
+            }
+        });
+
+        inspectBgColor.addEventListener('change', (e) => {
+            if (!activeElementId) return;
+            const { sectionId } = activeElementId;
+            const sec = siteData[activePage].sections.find(s => s.id === sectionId);
+            if (sec) {
+                sec.bgColor = e.target.value;
+                renderCanvas();
+                setTimeout(() => openInspector(sectionId, activeElementId.elementKey), 50);
+            }
+        });
+
+        inspectTextSize.addEventListener('change', (e) => {
+            if (!activeElementId) return;
+            const { sectionId, elementKey } = activeElementId;
+            const sec = siteData[activePage].sections.find(s => s.id === sectionId);
+            if (sec) {
+                sec[`${elementKey}Size`] = e.target.value;
+                renderCanvas();
+                setTimeout(() => openInspector(sectionId, elementKey), 50);
+            }
+        });
+
+        deleteElementBtn.addEventListener('click', () => {
+            if (activeElementId) {
+                deleteSection(activeElementId.sectionId);
+            }
+        });
+
+        // --- CODE GENERATOR & EXPORTER ---
+        exportBtn.addEventListener('click', () => {
+            const compiledCode = buildFullWebsiteCode();
+            exportCodeBlock.textContent = compiledCode;
+            exportModal.classList.remove('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            exportModal.classList.add('hidden');
+        });
+
+        modalCopyBtn.addEventListener('click', () => {
+            const temp = document.createElement('textarea');
+            temp.value = exportCodeBlock.textContent;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            
+            // Show toast
             const toast = document.getElementById('toast');
             toast.classList.remove('translate-y-20', 'opacity-0');
             toast.classList.add('translate-y-0', 'opacity-100');
@@ -544,12 +876,188 @@ ${keyframeStyles.trim()}`;
                 toast.classList.remove('translate-y-0', 'opacity-100');
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 3000);
+        });
+
+        function buildFullWebsiteCode() {
+            let pagesJSON = JSON.stringify(siteData, null, 2);
+
+            let cssKeyframes = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes bounceEffect {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; opacity: 0; }
+        .slide-up { animation: slideUp 0.8s ease-out forwards; opacity: 0; }
+        .zoom-in { animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .bounce { animation: bounceEffect 2s infinite ease-in-out; }
+            `;
+
+            return `<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${siteData.home.name}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+        }
+        ${cssKeyframes}
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between pb-12 sm:pb-0">
+
+    <!-- Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <a href="#" onclick="navigate('home')" class="font-extrabold text-lg tracking-tight bg-gradient-to-r bg-clip-text text-transparent from-indigo-400 to-fuchsia-400">WebCraft Project</a>
+        <nav class="flex gap-2 sm:gap-4" id="nav-links">
+            <!-- Dynamische Navlinks -->
+        </nav>
+    </header>
+
+    <!-- Content Router Area -->
+    <main id="main-content" class="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 space-y-8 sm:space-y-12">
+        <!-- Seiteninhalt -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-500 mt-12 shrink-0">
+        <p>© 2026 WebCraft Project. Alle Rechte vorbehalten.</p>
+    </footer>
+
+    <!-- Routing Engine -->
+    <script>
+        const siteData = ${pagesJSON};
+
+        function navigate(pageKey) {
+            if (!siteData[pageKey]) return;
+            document.title = siteData[pageKey].name;
+            renderNavbar(pageKey);
+
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = "";
+
+            siteData[pageKey].sections.forEach(sec => {
+                const secEl = document.createElement('section');
+                secEl.className = \`p-6 sm:p-12 rounded-2xl \${sec.bgColor} space-y-4 shadow-sm border border-slate-800/25\`;
+
+                if (sec.type === 'hero') {
+                    secEl.innerHTML = \`
+                        <div class="text-center py-6 max-w-2xl mx-auto space-y-4">
+                            <h1 class="\${sec.titleSize} tracking-tight text-slate-100 \${sec.titleAnim || ''}" style="animation-delay: \${sec.titleDelay || 0}s">\${escapeHtml(sec.title)}</h1>
+                            <p class="\${sec.subtitleSize} text-slate-400 \${sec.subtitleAnim || ''}" style="animation-delay: \${sec.subtitleDelay || 0}s">\${escapeHtml(sec.subtitle)}</p>
+                        </div>
+                    \`;
+                } else if (sec.type === 'features') {
+                    let cards = "";
+                    sec.features.forEach(feat => {
+                        cards += \`
+                            <div class="bg-slate-900/40 p-5 rounded-2xl border border-slate-800/85 space-y-3">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                                    <i data-lucide="\${feat.icon}" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-100">\${escapeHtml(feat.title)}</h4>
+                                <p class="text-xs text-slate-400 leading-relaxed">\${escapeHtml(feat.text)}</p>
+                            </div>
+                        \`;
+                    });
+
+                    secEl.innerHTML = \`
+                        <div class="space-y-8 py-4">
+                            <h2 class="\${sec.titleSize} text-center text-slate-100 \${sec.titleAnim || ''}" style="animation-delay: \${sec.titleDelay || 0}s">\${escapeHtml(sec.title)}</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                \${cards}
+                            </div>
+                        </div>
+                    \`;
+                } else if (sec.type === 'content') {
+                    secEl.innerHTML = \`
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-6">
+                            <div class="space-y-4">
+                                <h3 class="\${sec.titleSize} text-slate-100 \${sec.titleAnim || ''}" style="animation-delay: \${sec.titleDelay || 0}s">\${escapeHtml(sec.title)}</h3>
+                                <p class="\${sec.textSize} text-slate-400 leading-relaxed \${sec.textAnim || ''}" style="animation-delay: \${sec.textDelay || 0}s">\${escapeHtml(sec.text)}</p>
+                            </div>
+                            <div class="bg-slate-950 border border-slate-800 rounded-2xl aspect-video flex items-center justify-center text-slate-600">
+                                <i data-lucide="image" class="w-12 h-12"></i>
+                            </div>
+                        </div>
+                    \`;
+                } else if (sec.type === 'footer') {
+                    secEl.innerHTML = \`
+                        <div class="text-center py-4">
+                            <p class="\${sec.textSize} text-slate-500 \${sec.textAnim || ''}" style="animation-delay: \${sec.textDelay || 0}s">\${escapeHtml(sec.text)}</p>
+                        </div>
+                    \`;
+                }
+
+                mainContent.appendChild(secEl);
+            });
+
+            lucide.createIcons();
         }
 
-        // First Load Initializer
-        window.onload = function() {
-            updateAnimation();
+        function renderNavbar(activeKey) {
+            const nav = document.getElementById('nav-links');
+            nav.innerHTML = "";
+            Object.keys(siteData).forEach(key => {
+                const link = document.createElement('a');
+                link.href = "#";
+                link.onclick = (e) => { e.preventDefault(); navigate(key); };
+                link.className = key === activeKey 
+                    ? "text-xs font-semibold text-indigo-400 px-3 py-1.5 bg-indigo-600/10 rounded-lg border border-indigo-500/20" 
+                    : "text-xs text-slate-400 hover:text-slate-100 px-3 py-1.5 transition";
+                link.textContent = siteData[key].name;
+                nav.appendChild(link);
+            });
         }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        window.onload = function() {
+            navigate('home');
+        };
+    <\/script>
+</body>
+</html>`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        init();
     </script>
 </body>
 </html>
