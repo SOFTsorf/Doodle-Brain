@@ -4,359 +4,553 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DoodleBrain - Chat & Image Alchemy</title>
+    <title>CSS AnimCraft - Live Animation Sandbox</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #080a12;
+            background-color: #030712;
         }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
+        
+        .code-font {
+            font-family: 'Fira Code', monospace;
         }
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.05);
+
+        /* Schicke Grid-Hintergründe für die Preview-Box */
+        .preview-grid {
+            background-size: 20px 20px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
         }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(168, 85, 247, 0.1);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(168, 85, 247, 0.25);
+
+        /* Dynamisch generierter Animations-Style-Tag */
+        #dynamic-animation-style {
+            display: none;
         }
     </style>
 </head>
 <body class="text-slate-200 min-h-screen flex flex-col overflow-hidden">
 
+    <!-- Dynamischer Style-Tag für die Live-Vorschau -->
+    <style id="dynamic-animation-style"></style>
+
     <!-- Header -->
-    <header class="border-b border-slate-800/60 bg-slate-900/30 backdrop-blur-lg px-6 py-4 flex items-center justify-between shrink-0 shadow-sm z-10">
-        <div class="flex items-center gap-4">
-            <!-- DoodleBrain Logo Icon -->
-            <div class="p-3 bg-purple-600/15 text-purple-400 rounded-xl border border-purple-500/25 shadow-inner">
-                <i data-lucide="brain-circuit" class="w-7 h-7"></i>
+    <header class="border-b border-slate-800/80 bg-slate-950/60 backdrop-blur px-6 py-4 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-indigo-600/15 text-indigo-400 rounded-xl border border-indigo-500/20">
+                <i data-lucide="activity" class="w-6 h-6 animate-pulse"></i>
             </div>
             <div>
-                <h1 class="font-extrabold text-2xl tracking-tighter bg-gradient-to-r bg-clip-text text-transparent from-purple-400 via-fuchsia-400 to-indigo-400">DoodleBrain</h1>
-                <p class="text-xs text-slate-400 font-medium">Dein kreativer KI-Gefährte • Gemini + Imagen Studio</p>
+                <h1 class="font-extrabold text-xl tracking-tight bg-gradient-to-r bg-clip-text text-transparent from-indigo-400 to-fuchsia-400">AnimCraft</h1>
+                <p class="text-xs text-slate-400 font-medium">Interaktive CSS-Animation-Sandbox</p>
             </div>
         </div>
         
-        <button id="clear-chat" class="text-xs text-slate-400 hover:text-rose-400 flex items-center gap-2 transition px-4 py-2.5 rounded-xl hover:bg-slate-800/50 border border-slate-800/80 active:scale-95">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-            <span class="hidden sm:inline">Verlauf löschen</span>
-        </button>
+        <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-500 font-mono hidden sm:inline">NO-AI • Client Side Only</span>
+            <div class="h-4 w-[1px] bg-slate-800 hidden sm:block"></div>
+            <button id="reset-btn" class="text-xs text-slate-400 hover:text-slate-100 flex items-center gap-1.5 transition px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-900">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+            </button>
+        </div>
     </header>
 
-    <!-- Chat Area -->
-    <main class="flex-1 flex flex-col overflow-hidden relative max-w-5xl w-full mx-auto">
+    <!-- Workspace -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
         
-        <!-- Chat-Verlauf -->
-        <div id="chat-output" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
-            <!-- Willkommensnachricht -->
-            <div class="flex gap-4 max-w-3xl">
-                <div class="w-10 h-10 rounded-xl bg-purple-600/15 text-purple-400 flex items-center justify-center border border-purple-500/25 shrink-0 shadow">
-                    <i data-lucide="bot" class="w-5 h-5"></i>
+        <!-- Left Column: Controls (Scrollbar) -->
+        <section class="w-full lg:w-[460px] border-r border-slate-800/80 bg-slate-950/20 flex flex-col h-1/2 lg:h-full overflow-hidden shrink-0">
+            <div class="p-4 border-b border-slate-800/80 bg-slate-950/40 flex justify-between items-center shrink-0">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Parameter & Eigenschaften</span>
+                <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-mono">CSS3</span>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5 space-y-6">
+                <!-- Preset Buttons -->
+                <div class="space-y-3">
+                    <label class="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Presets
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="applyPreset('bounce')" class="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl text-xs text-slate-300 transition text-left flex items-center justify-between group">
+                            <span>Bounce</span> <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition text-indigo-400"></i>
+                        </button>
+                        <button onclick="applyPreset('spin')" class="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl text-xs text-slate-300 transition text-left flex items-center justify-between group">
+                            <span>Classic Spin</span> <i data-lucide="rotate-cw" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition text-indigo-400"></i>
+                        </button>
+                        <button onclick="applyPreset('pulse')" class="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl text-xs text-slate-300 transition text-left flex items-center justify-between group">
+                            <span>Pulse</span> <i data-lucide="heart" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition text-indigo-400"></i>
+                        </button>
+                        <button onclick="applyPreset('wobble')" class="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl text-xs text-slate-300 transition text-left flex items-center justify-between group">
+                            <span>Wobble</span> <i data-lucide="shuffle" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition text-indigo-400"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="space-y-3 bg-slate-900/40 border border-slate-800/60 rounded-2xl p-5 shadow-sm">
-                    <h2 class="font-bold text-slate-100">Hallo! DoodleBrain ist bereit. 🧠</h2>
-                    <p class="text-sm leading-relaxed text-slate-300">
-                        Ich bin dein All-in-One Kumpel für schlaue Antworten und kreative Bilder. Du kannst mir ganz normale Fragen stellen, oder mich direkt anweisen, etwas zu zeichnen.
-                    </p>
-                    <div class="p-3 bg-purple-950/20 rounded-xl border border-purple-500/10 text-xs text-purple-300 space-y-1">
-                        <span class="font-semibold block mb-1 text-purple-400">Beispiele zum Ausprobieren:</span>
-                        <p class="italic">"Erstelle ein Bild von einer Cyberpunk-Katze, die Kaffee trinkt."</p>
-                        <p class="italic">"Male mir einen einsamen Astronauten auf dem Mars im Ölgemälde-Stil."</p>
+
+                <hr class="border-slate-800/60">
+
+                <!-- Animation Properties -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Timing & Loop</h3>
+                    
+                    <!-- Duration -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span class="text-slate-300">Animation-Duration</span>
+                            <span class="text-indigo-400 font-mono" id="val-duration">1s</span>
+                        </div>
+                        <input type="range" id="param-duration" min="0.1" max="5" step="0.1" value="1" class="w-full accent-indigo-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Delay -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span class="text-slate-300">Animation-Delay</span>
+                            <span class="text-indigo-400 font-mono" id="val-delay">0s</span>
+                        </div>
+                        <input type="range" id="param-delay" min="0" max="3" step="0.1" value="0" class="w-full accent-indigo-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Iteration Count -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span class="text-slate-300">Animation-Iteration-Count</span>
+                            <span class="text-indigo-400 font-mono" id="val-iteration">infinite</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="range" id="param-iteration" min="1" max="10" step="1" value="10" class="flex-1 accent-indigo-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer" style="display: none;">
+                            <button id="btn-infinite" class="w-full py-2 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 text-xs font-semibold rounded-xl transition">Unendlich (infinite)</button>
+                            <button id="btn-numeric" class="w-full py-2 bg-slate-900 border border-slate-800 text-xs text-slate-400 rounded-xl transition hover:border-slate-700">Manuell einstellen</button>
+                        </div>
+                    </div>
+
+                    <!-- Timing Function (Easing) -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-medium text-slate-300">Animation-Timing-Function</label>
+                        <select id="param-easing" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 outline-none focus:border-indigo-500 transition">
+                            <option value="linear">linear</option>
+                            <option value="ease" selected>ease</option>
+                            <option value="ease-in">ease-in</option>
+                            <option value="ease-out">ease-out</option>
+                            <option value="ease-in-out">ease-in-out</option>
+                            <option value="cubic-bezier(0.175, 0.885, 0.32, 1.275)">cubic-bezier (Back / Elastic)</option>
+                            <option value="cubic-bezier(0.6, -0.28, 0.735, 0.045)">cubic-bezier (In-Back)</option>
+                        </select>
+                    </div>
+
+                    <!-- Direction -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-medium text-slate-300">Animation-Direction</label>
+                        <select id="param-direction" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 outline-none focus:border-indigo-500 transition">
+                            <option value="normal">normal</option>
+                            <option value="reverse">reverse</option>
+                            <option value="alternate" selected>alternate (Vor & Zurück)</option>
+                            <option value="alternate-reverse">alternate-reverse</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-slate-800/60">
+
+                <!-- Transform Keyframe Controls -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Transformations-Ziele (Keyframes)</h3>
+                    
+                    <!-- Translate X -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span class="text-slate-300">Verschiebung X</span>
+                            <span class="text-fuchsia-400 font-mono" id="val-tx">0px</span>
+                        </div>
+                        <input type="range" id="param-tx" min="-150" max="150" step="5" value="0" class="w-full accent-fuchsia-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Translate Y -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span class="text-slate-300">Verschiebung Y</span>
+                            <span class="text-fuchsia-400 font-mono" id="val-ty">-50px</span>
+                        </div>
+                        <input type="range" id="param-ty" min="-150" max="150" step="5" value="-50" class="w-full accent-fuchsia-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Scale -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span class="text-slate-300">Skalierung (Scale)</span>
+                            <span class="text-fuchsia-400 font-mono" id="val-scale">1.0</span>
+                        </div>
+                        <input type="range" id="param-scale" min="0.2" max="2" step="0.1" value="1" class="w-full accent-fuchsia-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Rotation -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span class="text-slate-300">Rotation</span>
+                            <span class="text-fuchsia-400 font-mono" id="val-rotate">0deg</span>
+                        </div>
+                        <input type="range" id="param-rotate" min="-360" max="360" step="5" value="0" class="w-full accent-fuchsia-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Opacity -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span class="text-slate-300 font-mono">Opacity</span>
+                            <span class="text-fuchsia-400 font-mono" id="val-opacity">1.0</span>
+                        </div>
+                        <input type="range" id="param-opacity" min="0" max="1" step="0.1" value="1" class="w-full accent-fuchsia-500 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer">
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Chat-Eingabe -->
-        <div class="p-4 md:p-6 border-t border-slate-800/60 bg-slate-950/40 shrink-0">
-            <form id="chat-form" class="flex gap-3">
-                <input type="text" id="chat-input" placeholder="Frag mich was oder sag 'Mal mir ein Bild von...'" class="flex-1 bg-slate-900/85 border border-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-2xl px-5 py-4 text-sm text-slate-100 outline-none transition" required autocomplete="off">
-                <button type="submit" id="chat-submit-btn" class="bg-purple-600 hover:bg-purple-500 text-white rounded-2xl px-7 py-4 flex items-center justify-center transition shrink-0 active:scale-95 shadow-lg shadow-purple-600/20">
-                    <i data-lucide="send" class="w-5 h-5"></i>
-                </button>
-            </form>
-        </div>
+        <!-- Right Column: Live-Preview & Output Code -->
+        <section class="flex-1 flex flex-col h-1/2 lg:h-full overflow-hidden">
+            
+            <!-- Top half of right column: Live View -->
+            <div class="flex-1 preview-grid relative flex items-center justify-center p-6 border-b border-slate-800/80 bg-slate-950/10">
+                <!-- Watermark -->
+                <div class="absolute top-4 left-4 flex gap-2">
+                    <button onclick="changeObject('box')" id="obj-box" class="px-3 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg text-xs font-medium transition active:scale-95">Box</button>
+                    <button onclick="changeObject('circle')" id="obj-circle" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-400 rounded-lg text-xs font-medium transition active:scale-95 hover:border-slate-700">Kreis</button>
+                    <button onclick="changeObject('star')" id="obj-star" class="px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-400 rounded-lg text-xs font-medium transition active:scale-95 hover:border-slate-700">Stern</button>
+                </div>
+
+                <!-- Live Playground Object -->
+                <div id="sandbox-object-wrapper" class="relative">
+                    <div id="sandbox-object" class="w-24 h-24 bg-gradient-to-tr from-indigo-500 via-purple-500 to-fuchsia-500 rounded-2xl shadow-xl flex items-center justify-center border border-white/10 select-none">
+                        <i id="sandbox-icon" data-lucide="ghost" class="w-10 h-10 text-white drop-shadow"></i>
+                    </div>
+                </div>
+
+                <!-- Info Banner -->
+                <div class="absolute bottom-4 right-4 flex items-center gap-2 bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-xl border border-slate-800 text-[10px] text-slate-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Render Active
+                </div>
+            </div>
+
+            <!-- Bottom half of right column: Code Exporter & Console -->
+            <div class="h-1/3 lg:h-2/5 flex flex-col bg-slate-950 border-t border-slate-900">
+                <div class="px-6 py-3 border-b border-slate-900 flex justify-between items-center bg-slate-950 shrink-0">
+                    <div class="flex items-center gap-2 text-indigo-400">
+                        <i data-lucide="code-2" class="w-4 h-4"></i>
+                        <span class="text-xs font-bold uppercase tracking-wider">Generiertes CSS & HTML</span>
+                    </div>
+                    <button id="copy-btn" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition active:scale-95">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Code kopieren
+                    </button>
+                </div>
+
+                <!-- Code Container -->
+                <div class="flex-1 overflow-auto p-6 code-font text-xs text-slate-300 bg-slate-950/90 flex flex-col sm:flex-row gap-6">
+                    <!-- CSS Code -->
+                    <div class="flex-1 space-y-2">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">CSS Stylesheet</p>
+                        <pre class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-xl overflow-x-auto text-indigo-300" id="css-code-block"></pre>
+                    </div>
+                    <!-- HTML Code -->
+                    <div class="flex-1 space-y-2">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">HTML Struktur</p>
+                        <pre class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-xl overflow-x-auto text-fuchsia-300" id="html-code-block"></pre>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
     </main>
 
-    <!-- Toast Notification (Ersatz für unschöne Alerts) -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-rose-950/90 border border-rose-500/50 text-rose-200 px-4 py-3 rounded-xl flex items-center gap-3 shadow-lg pointer-events-none">
-        <i data-lucide="alert-circle" class="w-5 h-5 shrink-0"></i>
-        <span id="toast-message" class="text-xs font-medium">Ein Fehler ist aufgetreten.</span>
+    <!-- Toast Notification (Custom Modal replacement) -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-emerald-950/90 border border-emerald-500/50 text-emerald-200 px-4 py-3 rounded-xl flex items-center gap-3 shadow-lg pointer-events-none">
+        <i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i>
+        <span id="toast-message" class="text-xs font-medium">In die Zwischenablage kopiert!</span>
     </div>
 
-    <!-- Script Logik -->
+    <!-- Live Script -->
     <script>
-        const apiKey = ""; // Wird automatisch zur Laufzeit befüllt
+        // DOM Controls
+        const durationInput = document.getElementById('param-duration');
+        const delayInput = document.getElementById('param-delay');
+        const iterationInput = document.getElementById('param-iteration');
+        const easingSelect = document.getElementById('param-easing');
+        const directionSelect = document.getElementById('param-direction');
+        
+        const txInput = document.getElementById('param-tx');
+        const tyInput = document.getElementById('param-ty');
+        const scaleInput = document.getElementById('param-scale');
+        const rotateInput = document.getElementById('param-rotate');
+        const opacityInput = document.getElementById('param-opacity');
 
-        const chatForm = document.getElementById('chat-form');
-        const chatInput = document.getElementById('chat-input');
-        const chatOutput = document.getElementById('chat-output');
-        const clearChatBtn = document.getElementById('clear-chat');
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toast-message');
+        // Output Values
+        const valDuration = document.getElementById('val-duration');
+        const valDelay = document.getElementById('val-delay');
+        const valIteration = document.getElementById('val-iteration');
+        const valTx = document.getElementById('val-tx');
+        const valTy = document.getElementById('val-ty');
+        const valScale = document.getElementById('val-scale');
+        const valRotate = document.getElementById('val-rotate');
+        const valOpacity = document.getElementById('val-opacity');
 
-        // Initialisiere Icons
+        // Elements
+        const sandboxObj = document.getElementById('sandbox-object');
+        const sandboxIcon = document.getElementById('sandbox-icon');
+        const styleTag = document.getElementById('dynamic-animation-style');
+        const cssCodeBlock = document.getElementById('css-code-block');
+        const htmlCodeBlock = document.getElementById('html-code-block');
+        const copyBtn = document.getElementById('copy-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        // Infinite/Numeric Loop Buttons
+        const btnInfinite = document.getElementById('btn-infinite');
+        const btnNumeric = document.getElementById('btn-numeric');
+
+        let isInfinite = true;
+        let activeObject = 'box';
+
+        // Initialize Lucide Icons
         lucide.createIcons();
 
-        // Helfer: Toast Benachrichtigung zeigen
-        function showToast(message) {
-            toastMessage.textContent = message;
+        // Register All Events
+        const inputs = [
+            durationInput, delayInput, iterationInput, easingSelect, 
+            directionSelect, txInput, tyInput, scaleInput, rotateInput, opacityInput
+        ];
+
+        inputs.forEach(input => {
+            input.addEventListener('input', updateAnimation);
+            input.addEventListener('change', updateAnimation);
+        });
+
+        // Loop Mode Switchers
+        btnInfinite.addEventListener('click', () => {
+            isInfinite = true;
+            btnInfinite.className = "w-full py-2 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 text-xs font-semibold rounded-xl transition";
+            btnNumeric.className = "w-full py-2 bg-slate-900 border border-slate-800 text-xs text-slate-400 rounded-xl transition hover:border-slate-700";
+            iterationInput.style.display = 'none';
+            valIteration.textContent = "infinite";
+            updateAnimation();
+        });
+
+        btnNumeric.addEventListener('click', () => {
+            isInfinite = false;
+            btnNumeric.className = "w-full py-2 bg-fuchsia-600/20 text-fuchsia-400 border border-fuchsia-500/30 text-xs font-semibold rounded-xl transition";
+            btnInfinite.className = "w-full py-2 bg-slate-900 border border-slate-800 text-xs text-slate-400 rounded-xl transition hover:border-slate-700";
+            iterationInput.style.display = 'block';
+            valIteration.textContent = iterationInput.value;
+            updateAnimation();
+        });
+
+        // Object Swappper
+        function changeObject(type) {
+            activeObject = type;
+            const btnBox = document.getElementById('obj-box');
+            const btnCircle = document.getElementById('obj-circle');
+            const btnStar = document.getElementById('obj-star');
+
+            // Reset States
+            [btnBox, btnCircle, btnStar].forEach(btn => {
+                btn.className = "px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-400 rounded-lg text-xs font-medium transition active:scale-95 hover:border-slate-700";
+            });
+
+            // Set Active & Modify Styles
+            if (type === 'box') {
+                btnBox.className = "px-3 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg text-xs font-medium transition active:scale-95";
+                sandboxObj.className = "w-24 h-24 bg-gradient-to-tr from-indigo-500 via-purple-500 to-fuchsia-500 rounded-2xl shadow-xl flex items-center justify-center border border-white/10 select-none";
+                sandboxIcon.style.display = 'block';
+            } else if (type === 'circle') {
+                btnCircle.className = "px-3 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg text-xs font-medium transition active:scale-95";
+                sandboxObj.className = "w-24 h-24 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-full shadow-xl flex items-center justify-center border border-white/10 select-none";
+                sandboxIcon.style.display = 'block';
+            } else if (type === 'star') {
+                btnStar.className = "px-3 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg text-xs font-medium transition active:scale-95";
+                sandboxObj.className = "w-24 h-24 bg-gradient-to-tr from-amber-400 to-orange-500 shadow-xl flex items-center justify-center border border-white/10 select-none";
+                sandboxObj.style.clipPath = "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
+                sandboxIcon.style.display = 'none'; // No icon in the star
+            }
+
+            if (type !== 'star') {
+                sandboxObj.style.clipPath = 'none';
+            }
+
+            updateAnimation();
+        }
+
+        // Apply Presets
+        function applyPreset(name) {
+            if (name === 'bounce') {
+                durationInput.value = "1";
+                delayInput.value = "0";
+                easingSelect.value = "cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+                directionSelect.value = "alternate";
+                txInput.value = "0";
+                tyInput.value = "-100";
+                scaleInput.value = "1.1";
+                rotateInput.value = "0";
+                opacityInput.value = "1";
+            } else if (name === 'spin') {
+                durationInput.value = "2";
+                delayInput.value = "0";
+                easingSelect.value = "linear";
+                directionSelect.value = "normal";
+                txInput.value = "0";
+                tyInput.value = "0";
+                scaleInput.value = "1";
+                rotateInput.value = "360";
+                opacityInput.value = "1";
+            } else if (name === 'pulse') {
+                durationInput.value = "0.8";
+                delayInput.value = "0";
+                easingSelect.value = "ease-in-out";
+                directionSelect.value = "alternate";
+                txInput.value = "0";
+                tyInput.value = "0";
+                scaleInput.value = "1.3";
+                rotateInput.value = "0";
+                opacityInput.value = "0.8";
+            } else if (name === 'wobble') {
+                durationInput.value = "1.2";
+                delayInput.value = "0";
+                easingSelect.value = "ease-in-out";
+                directionSelect.value = "alternate";
+                txInput.value = "50";
+                tyInput.value = "0";
+                scaleInput.value = "1";
+                rotateInput.value = "30";
+                opacityInput.value = "1";
+            }
+
+            // Sync visual display of numeric loop if active
+            if (!isInfinite) {
+                btnInfinite.click();
+            }
+
+            updateAnimation();
+        }
+
+        // Main Engine: Rebuild and reinject CSS & generate preview code
+        function updateAnimation() {
+            // Get current values
+            const d = durationInput.value + "s";
+            const del = delayInput.value + "s";
+            const iter = isInfinite ? "infinite" : iterationInput.value;
+            const ease = easingSelect.value;
+            const dir = directionSelect.value;
+
+            const tx = txInput.value + "px";
+            const ty = tyInput.value + "px";
+            const scale = scaleInput.value;
+            const r = rotateInput.value + "deg";
+            const op = opacityInput.value;
+
+            // Update Side Value Badges
+            valDuration.textContent = d;
+            valDelay.textContent = del;
+            valIteration.textContent = iter;
+            valTx.textContent = tx;
+            valTy.textContent = ty;
+            valScale.textContent = scale;
+            valRotate.textContent = r;
+            valOpacity.textContent = op;
+
+            // Generate Keyframe Rule
+            const keyframeStyles = `
+@keyframes animCraftMove {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(${tx}, ${ty}) scale(${scale}) rotate(${r});
+    opacity: ${op};
+  }
+}`;
+
+            const objectStyle = `
+#sandbox-object {
+  animation-name: animCraftMove;
+  animation-duration: ${d};
+  animation-delay: ${del};
+  animation-iteration-count: ${iter};
+  animation-timing-function: ${ease};
+  animation-direction: ${dir};
+  animation-fill-mode: forwards;
+}`;
+
+            // Inject styles dynamically into Document
+            styleTag.innerHTML = keyframeStyles + objectStyle;
+
+            // Update HTML Output Field
+            let classes = "w-24 h-24 bg-gradient-to-tr from-indigo-500 to-fuchsia-500 rounded-2xl shadow-xl flex items-center justify-center";
+            if (activeObject === 'circle') classes = "w-24 h-24 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-full shadow-xl flex items-center justify-center";
+            if (activeObject === 'star') classes = "w-24 h-24 bg-gradient-to-tr from-amber-400 to-orange-500 shadow-xl";
+
+            const elementString = activeObject === 'star' 
+                ? `<div class="${classes}" id="my-element"></div>`
+                : `<div class="${classes}" id="my-element">
+  <!-- Deinen SVG-Inhalt oder Text hier platzieren -->
+</div>`;
+
+            htmlCodeBlock.textContent = elementString;
+
+            // Update CSS Output Field
+            const cssString = `#my-element {
+  animation: animCraftMove ${d} ${ease} ${del} ${iter} ${dir} forwards;
+}
+
+${keyframeStyles.trim()}`;
+
+            cssCodeBlock.textContent = cssString;
+        }
+
+        // Reset Button Action
+        resetBtn.addEventListener('click', () => {
+            applyPreset('pulse');
+        });
+
+        // Clipboard Copy Helper
+        copyBtn.addEventListener('click', () => {
+            const cssText = cssCodeBlock.textContent;
+            const htmlText = htmlCodeBlock.textContent;
+            const combinedText = `/* --- CSS STYLES --- */\n${cssText}\n\n<!-- --- HTML --- -->\n${htmlText}`;
+
+            // Fallback Copy Function
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = combinedText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast();
+            } catch (err) {
+                console.error('Fehler beim Kopieren: ', err);
+            }
+            
+            document.body.removeChild(tempTextArea);
+        });
+
+        // Toast Trigger
+        function showToast() {
+            const toast = document.getElementById('toast');
             toast.classList.remove('translate-y-20', 'opacity-0');
             toast.classList.add('translate-y-0', 'opacity-100');
             setTimeout(() => {
                 toast.classList.remove('translate-y-0', 'opacity-100');
                 toast.classList.add('translate-y-20', 'opacity-0');
-            }, 5000);
+            }, 3000);
         }
 
-        // Helfer: Exponential Backoff für API-Anfragen
-        async function fetchWithRetry(url, options, maxRetries = 5) {
-            let delay = 1000;
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (response.ok) return response;
-                    if (response.status !== 429 && response.status !== 500 && response.status !== 503) {
-                        return response; 
-                    }
-                } catch (err) {
-                    if (i === maxRetries - 1) throw err;
-                }
-                await new Promise(resolve => setTimeout(resolve, delay));
-                delay *= 2;
-            }
-            throw new Error("Verbindung zum Server fehlgeschlagen.");
-        }
-
-        // Chat absenden
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const prompt = chatInput.value.trim();
-            if (!prompt) return;
-
-            // 1. User Nachricht hinzufügen
-            addMessage('user', prompt);
-            chatInput.value = '';
-
-            // 2. Loader für die KI-Antwort anzeigen
-            const loaderId = addLoader("DoodleBrain denkt nach...");
-
-            try {
-                // Structured Outputs, damit uns Gemini sagt, ob ein Bild generiert werden soll
-                const response = await fetchWithRetry(
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            systemInstruction: {
-                                parts: [{ text: "Du bist DoodleBrain, eine multimodale KI. Antworte immer auf Deutsch in einem lockeren, kumpelhaften und direkten Ton. Wenn der Benutzer dich bittet, ein Bild zu zeichnen, zu malen, zu generieren oder zu erstellen, antworte positiv (z.B. 'Klar, das zeichne ich dir sofort!') und setze 'shouldGenerateImage' auf true. Erstelle in diesem Fall einen hochpräzisen, detaillierten englischen Bildprompt für Imagen 4 unter 'imagePrompt'. Wenn kein Bild gewünscht ist, halte 'shouldGenerateImage' auf false." }]
-                            },
-                            generationConfig: {
-                                responseMimeType: "application/json",
-                                responseSchema: {
-                                    type: "OBJECT",
-                                    properties: {
-                                        text: { type: "STRING", description: "Die geschriebene Antwort an den Benutzer auf Deutsch." },
-                                        shouldGenerateImage: { type: "BOOLEAN", description: "True, wenn der User ein Bild generiert haben möchte." },
-                                        imagePrompt: { type: "STRING", description: "Ein detaillierter, kreativer englischer Prompt für das Bildgenerierungsmodell, falls ein Bild erstellt werden soll. Sonst leer." }
-                                    },
-                                    required: ["text", "shouldGenerateImage", "imagePrompt"]
-                                }
-                            }
-                        })
-                    }
-                );
-
-                removeLoader(loaderId);
-
-                if (!response.ok) {
-                    throw new Error("Fehler beim Abrufen der KI-Antwort.");
-                }
-
-                const result = await response.json();
-                const data = JSON.parse(result.candidates?.[0]?.content?.parts?.[0]?.text || "{}");
-
-                // KI Text-Antwort ausgeben
-                if (data.text) {
-                    addMessage('assistant', data.text);
-                }
-
-                // Falls ein Bild generiert werden soll
-                if (data.shouldGenerateImage && data.imagePrompt) {
-                    await triggerImageGeneration(data.imagePrompt);
-                }
-
-            } catch (error) {
-                removeLoader(loaderId);
-                showToast(error.message || "Verbindungsfehler.");
-                addMessage('assistant', "Ups, da ist etwas schiefgelaufen. Versuch es bitte gleich nochmal!");
-            }
-        });
-
-        // Bildgenerierung über Imagen 4.0 triggern und inline anzeigen
-        async function triggerImageGeneration(englishPrompt) {
-            const imageLoaderId = addLoader("DoodleBrain zeichnet das Bild...", "wand-2");
-
-            try {
-                const response = await fetchWithRetry(
-                    `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            instances: { prompt: englishPrompt },
-                            parameters: { sampleCount: 1 }
-                        })
-                    }
-                );
-
-                removeLoader(imageLoaderId);
-
-                if (!response.ok) {
-                    throw new Error("Bildgenerator antwortet gerade nicht.");
-                }
-
-                const result = await response.json();
-                const base64Bytes = result.predictions?.[0]?.bytesBase64Encoded;
-
-                if (!base64Bytes) {
-                    throw new Error("Keine Bilddaten erhalten.");
-                }
-
-                const imageUrl = `data:image/png;base64,${base64Bytes}`;
-                addImageMessage(imageUrl, englishPrompt);
-
-            } catch (error) {
-                removeLoader(imageLoaderId);
-                showToast(error.message || "Fehler beim Erstellen des Bildes.");
-                addMessage('assistant', "Ich wollte dein Bild zeichnen, aber das Modul hat gerade Schluckauf. Versuchen wir es mit einem anderen Prompt?");
-            }
-        }
-
-        // Nachricht zum Verlauf hinzufügen
-        function addMessage(role, text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `flex gap-4 max-w-3xl ${role === 'user' ? 'ml-auto flex-row-reverse' : ''}`;
-
-            const iconBg = role === 'user' ? 'bg-slate-800 text-slate-300 border border-slate-700' : 'bg-purple-600/20 text-purple-400 border border-purple-500/30';
-            const iconName = role === 'user' ? 'user' : 'bot';
-            const cardBg = role === 'user' ? 'bg-purple-600/10 border border-purple-500/20 ml-auto' : 'bg-slate-900/40 border border-slate-800/80';
-
-            messageDiv.innerHTML = `
-                <div class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0 shadow-sm">
-                    <i data-lucide="${iconName}" class="w-5 h-5"></i>
-                </div>
-                <div class="${cardBg} rounded-2xl p-4 md:p-5 shadow-md">
-                    <p class="text-sm leading-relaxed text-slate-200">${escapeHtml(text)}</p>
-                </div>
-            `;
-
-            chatOutput.appendChild(messageDiv);
-            lucide.createIcons();
-            scrollToBottom();
-        }
-
-        // Inline Bildnachricht hinzufügen
-        function addImageMessage(imageUrl, promptUsed) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = "flex gap-4 max-w-3xl";
-
-            messageDiv.innerHTML = `
-                <div class="w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30 flex items-center justify-center shrink-0 shadow-sm">
-                    <i data-lucide="image" class="w-5 h-5"></i>
-                </div>
-                <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl max-w-md">
-                    <div class="relative group">
-                        <img src="${imageUrl}" alt="AI Generated" class="w-full h-auto object-cover max-h-[400px]">
-                        <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition duration-200">
-                            <a href="${imageUrl}" download="doodlebrain-masterpiece.png" class="p-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition shadow flex items-center gap-2 text-xs font-semibold">
-                                <i data-lucide="download" class="w-4 h-4"></i> Herunterladen
-                            </a>
-                        </div>
-                    </div>
-                    <div class="p-4 bg-slate-950/45 border-t border-slate-800/60">
-                        <p class="text-[10px] text-purple-400 font-bold uppercase tracking-wider mb-1">Doodle Prompt</p>
-                        <p class="text-xs text-slate-400 italic leading-relaxed">${escapeHtml(promptUsed)}</p>
-                    </div>
-                </div>
-            `;
-
-            chatOutput.appendChild(messageDiv);
-            lucide.createIcons();
-            scrollToBottom();
-        }
-
-        // Lade-Indikator
-        function addLoader(statusText, iconName = "loader") {
-            const loaderId = 'loader-' + Date.now();
-            const loaderDiv = document.createElement('div');
-            loaderDiv.id = loaderId;
-            loaderDiv.className = 'flex gap-4 max-w-3xl animate-pulse';
-            loaderDiv.innerHTML = `
-                <div class="w-10 h-10 rounded-xl bg-purple-600/10 text-purple-400/70 border border-purple-500/20 flex items-center justify-center shrink-0">
-                    <i data-lucide="${iconName}" class="w-4 h-4 ${iconName === 'loader' ? 'animate-spin' : ''}"></i>
-                </div>
-                <div class="bg-slate-900/20 border border-slate-800/50 rounded-2xl p-4 flex items-center gap-3">
-                    <span class="text-xs text-slate-400">${statusText}</span>
-                    <div class="flex gap-1">
-                        <span class="w-1.5 h-1.5 bg-purple-500/60 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
-                        <span class="w-1.5 h-1.5 bg-purple-500/60 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
-                        <span class="w-1.5 h-1.5 bg-purple-500/60 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
-                    </div>
-                </div>
-            `;
-            chatOutput.appendChild(loaderDiv);
-            lucide.createIcons();
-            scrollToBottom();
-            return loaderId;
-        }
-
-        function removeLoader(id) {
-            const loader = document.getElementById(id);
-            if (loader) loader.remove();
-        }
-
-        function scrollToBottom() {
-            chatOutput.scrollTo({ top: chatOutput.scrollHeight, behavior: 'smooth' });
-        }
-
-        // Chat leeren
-        clearChatBtn.addEventListener('click', () => {
-            chatOutput.innerHTML = `
-                <div class="flex gap-4 max-w-3xl">
-                    <div class="w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center border border-purple-500/30 shrink-0 shadow">
-                        <i data-lucide="bot" class="w-5 h-5"></i>
-                    </div>
-                    <div class="space-y-2 bg-slate-900/40 border border-slate-800/60 rounded-2xl p-5 shadow-sm">
-                        <p class="text-sm leading-relaxed text-slate-300">
-                            Alles gelöscht! DoodleBrain ist bereit für neue Abenteuer. Was soll ich tun?
-                        </p>
-                    </div>
-                </div>
-            `;
-            lucide.createIcons();
-        });
-
-        // HTML-Entities filtern
-        function escapeHtml(text) {
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+        // First Load Initializer
+        window.onload = function() {
+            updateAnimation();
         }
     </script>
 </body>
 </html>
+
